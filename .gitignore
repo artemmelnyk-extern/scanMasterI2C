@@ -1,0 +1,21 @@
+# STM32CubeIDE build output
+STM32CubeIDE/Debug/
+STM32CubeIDE/Release/
+
+# Build artifact file types (if outside Debug/Release)
+*.o
+*.d
+*.su
+*.cyclo
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+
+# Eclipse / STM32CubeIDE workspace metadata
+wp/
+.metadata/
+
+# STM32CubeMX backup files
+*.bak
