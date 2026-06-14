@@ -88,7 +88,21 @@ void SystemClock_Config(void);
 void showPowerCtlRegs(void) {
 	printf("\n");
 	for(uint8_t count=0; count < POWERMGT_REG_SENSE_CNT; count++) {
-		printf("\nreg 0x%02X: 0x%04X", count, regsSetPowerMan.sense[count]);
+		// Decode per Power Controller user guide V4.0 (integer math, no float printf).
+		uint16_t raw = regsSetPowerMan.sense[count];
+		if(count == POWERMGT_REG_TEMP) {
+			// Vtemperature: signed 16-bit, value x100 (degrees C)
+			int16_t t = (int16_t)raw;
+			int16_t a = (t < 0) ? -t : t;
+			printf("\nreg 0x%02X: 0x%04X  %s%d.%02d C", count, raw, (t < 0) ? "-" : "", a/100, a%100);
+		} else if(count == 0x09) {
+			// VRefInt: do not use
+			printf("\nreg 0x%02X: 0x%04X  (do not use)", count, raw);
+		} else {
+			// Sense voltage: bits [b0..b11], value x100
+			uint16_t v = raw & 0x0FFF;
+			printf("\nreg 0x%02X: 0x%04X  %u.%02u V", count, raw, v/100, v%100);
+		}
 	}
 	for(uint8_t count=0; count < POWERMGT_REG_CTL_CNT; count++) {
 		printf("\nreg 0x%02X: 0x%02X", POWERMGT_REG_SENSE_CNT+count, regsSetPowerMan.control[count]);
