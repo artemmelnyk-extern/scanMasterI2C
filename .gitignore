@@ -22,3 +22,6 @@ wp/
 
 # Confidential production dossier (local symlink only, not committed)
 Dossier_Production_QENVI
+
+# LLM Wiki: derives from the confidential dossier, kept local (not committed).
+wiki/
