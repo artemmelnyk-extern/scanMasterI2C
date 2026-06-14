@@ -19,3 +19,6 @@ wp/
 
 # STM32CubeMX backup files
 *.bak
+
+# Confidential production dossier (local symlink only, not committed)
+Dossier_Production_QENVI
