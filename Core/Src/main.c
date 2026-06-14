@@ -86,7 +86,15 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 
 void showPowerCtlRegs(void) {
+	// Sense register names per Power Controller user guide V4.0 (regs 0x00..0x09)
+	static const char *senseName[POWERMGT_REG_SENSE_CNT] = {
+		"CM4", "Lidar1", "Lidar2", "CanBus", "Accessory",
+		"Input5v", "Batt", "MainPwr", "Temp", "VRefInt"
+	};
 	printf("\n");
+	// 96-bit factory-programmed unique device ID of this MCU (read-only, UID_BASE 0x1FFFF7AC)
+	printf("\nUnique Device ID (UID) IS %08lX-%08lX-%08lX",
+			HAL_GetUIDw2(), HAL_GetUIDw1(), HAL_GetUIDw0());
 	for(uint8_t count=0; count < POWERMGT_REG_SENSE_CNT; count++) {
 		// Decode per Power Controller user guide V4.0 (integer math, no float printf).
 		uint16_t raw = regsSetPowerMan.sense[count];
@@ -94,14 +102,14 @@ void showPowerCtlRegs(void) {
 			// Vtemperature: signed 16-bit, value x100 (degrees C)
 			int16_t t = (int16_t)raw;
 			int16_t a = (t < 0) ? -t : t;
-			printf("\nreg 0x%02X: 0x%04X  %s%d.%02d C", count, raw, (t < 0) ? "-" : "", a/100, a%100);
+			printf("\nreg 0x%02X: 0x%04X  %-9s %s%d.%02d C", count, raw, senseName[count], (t < 0) ? "-" : "", a/100, a%100);
 		} else if(count == 0x09) {
 			// VRefInt: do not use
-			printf("\nreg 0x%02X: 0x%04X  (do not use)", count, raw);
+			printf("\nreg 0x%02X: 0x%04X  %-9s (do not use)", count, raw, senseName[count]);
 		} else {
 			// Sense voltage: bits [b0..b11], value x100
 			uint16_t v = raw & 0x0FFF;
-			printf("\nreg 0x%02X: 0x%04X  %u.%02u V", count, raw, v/100, v%100);
+			printf("\nreg 0x%02X: 0x%04X  %-9s %u.%02u V", count, raw, senseName[count], v/100, v%100);
 		}
 	}
 	for(uint8_t count=0; count < POWERMGT_REG_CTL_CNT; count++) {
