@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <string.h>
 
 /* USER CODE END Includes */
 
@@ -120,7 +121,15 @@ void showPowerCtlRegs(void) {
 
 /* USER CODE BEGIN 0 */
 int _write(int file, char *ptr, int len) {
-	HAL_UART_Transmit(&huart2, (const uint8_t *)ptr, (uint16_t)len, HAL_MAX_DELAY);
+	// Translate LF -> CRLF so a raw serial terminal returns to column 0
+	// (otherwise lines "staircase" diagonally across the screen).
+	for(int i = 0; i < len; i++) {
+		if(ptr[i] == '\n') {
+			uint8_t cr = '\r';
+			HAL_UART_Transmit(&huart2, &cr, 1, HAL_MAX_DELAY);
+		}
+		HAL_UART_Transmit(&huart2, (uint8_t *)&ptr[i], 1, HAL_MAX_DELAY);
+	}
     return len;
 }
 
@@ -171,10 +180,20 @@ int main(void)
   while (1)
   {
 
-	  HAL_I2C_Master_Receive_DMA(&hi2c1, POWERMGT_I2C_ADDR, (uint8_t *)&regsSetPowerMan,
-	                                               sizeof(regsSetPowerMan));
-	  for(uint8_t iter = 0; iter <16; iter=iter+1)
-	  {
+	  // Clear the buffer before each read so a failed/absent slave shows zeros,
+	  // not the previous (stale) values.
+	  memset(&regsSetPowerMan, 0, sizeof(regsSetPowerMan));
+	  // Presence check: send the address only and look for an ACK. If the slave
+	  // truly NACKs (powered off and not parasitically driven), report it and
+	  // skip the read so no stale block is reprinted.
+	  if (HAL_I2C_IsDeviceReady(&hi2c1, POWERMGT_I2C_ADDR, 2, 10) != HAL_OK) {
+		  printf("\nI2C 0x%02X not responding", POWERMGT_I2C_ADDR >> 1);
+	  } else {
+		  HAL_I2C_Master_Receive_DMA(&hi2c1, POWERMGT_I2C_ADDR, (uint8_t *)&regsSetPowerMan,
+		                                               sizeof(regsSetPowerMan));
+	  }
+//	  for(uint8_t iter = 0; iter <16; iter=iter+1)
+//	  {
 
 //		  HAL_I2C_Mem_Read(&hi2c1, POWERMGT_I2C_ADDR, iter,
 //				  POWERMGT_REG_SIZE, (uint8_t *)&regsSetPowerMan[iter], POWERMGT_REG_SIZE, HAL_MAX_DELAY);
@@ -183,7 +202,7 @@ int main(void)
 //
 //		  HAL_I2C_Master_Receive(&hi2c1, POWERMGT_I2C_ADDR, (uint8_t *)&regsSetPowerMan[iter], POWERMGT_REG_SIZE, HAL_MAX_DELAY);
 
-	  }
+//	  }
 
 //	  showPowerCtlRegs();
     /* USER CODE END WHILE */
