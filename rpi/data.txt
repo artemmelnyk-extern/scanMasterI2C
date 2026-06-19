@@ -1,0 +1,27 @@
+pi@raspberrypi:~ $ python3 check_voltages.py 
+
+Reg   Name            Raw      Value  Status
+──────────────────────────────────────────────
+0x00  CM4          0x01F1     4.97 V      OK 
+0x01  Lidar1       0x0000     0.00 V     FAIL
+0x02  Lidar2       0x0000     0.00 V     FAIL
+0x03  CanBus       0x0204     5.16 V      OK 
+0x04  Accessory    0x0235     5.65 V     FAIL
+0x05  Input5v      0x0204     5.16 V      OK 
+0x06  Batt         0x15AE    14.54 V      OK 
+0x07  MainPwr      0x044F    11.03 V      OK 
+0x08  Temp         0x1518    54.00 °C     OK 
+0x09  VRefInt      0x014A     3.30 V (do not use)    —  
+──────────────────────────────────────────────
+
+Control registers (0x0A–0x11):
+  0x0A  0x01  (00000001b)
+  0x0B  0x01  (00000001b)
+  0x0C  0x02  (00000010b)
+  0x0D  0x02  (00000010b)
+  0x0E  0x00  (00000000b)
+  0x0F  0x02  (00000010b)
+  0x10  0x02  (00000010b)
+  0x11  0x00  (00000000b)
+
+>>> FAULT DETECTED – check FAIL lines above <<<
